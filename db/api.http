@@ -1,3 +1,12 @@
+PUT http://localhost:3000/tasks/2
+Content-Type: application/json
+
+{
+  "name": "Tarefa 2",
+  "status": "To do",
+  "due_date": "2024-02-14"
+}
+
 ###
 DELETE http://localhost:3000/tasks/4
 

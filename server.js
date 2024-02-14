@@ -62,6 +62,37 @@ app.delete('/tasks/:id', (req, res) => {
     });
 });
 
+app.put('/tasks/:id', (req, res) => {
+    const taskId = req.params.id;
+    const {name, status, due_date} = req.body;
+    const updatedTask = {name, status, due_date};
+
+    db.get('SELECT id FROM tasks WHERE id = ?', [taskId], (err, row) => {
+        if (err) {
+            res.status(500).json({error: err.message});
+            return;
+        }
+
+        if (!row) {
+            res.status(404).json({error: 'ID inválido.'});
+            return;
+        }
+
+        db.run(
+            'UPDATE tasks SET name = ?, status = ?, due_date = ? WHERE id = ?',
+            [name, status, due_date, req.params.id],
+            function (err) {
+                if (err) {
+                    res.status(400).json({error: err.message});
+                    return;
+                }
+                res.status(204).json(updatedTask);
+            }
+        );
+    })
+
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
