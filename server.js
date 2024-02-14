@@ -39,6 +39,29 @@ app.post('/tasks', (req, res) => {
     });
 });
 
+app.delete('/tasks/:id', (req, res) => {
+    const taskId = req.params.id;
+    db.get('SELECT id FROM tasks WHERE id = ?', [taskId], (err, row) => {
+        if (err) {
+            res.status(500).json({error: err.message});
+            return;
+        }
+
+        if (!row) {
+            res.status(404).json({error: 'Tarefa não encontrada'});
+            return;
+        }
+
+        db.run('DELETE FROM tasks WHERE id = ?', taskId, function (err) {
+            if (err) {
+                res.status(400).json({error: err.message});
+                return;
+            }
+            res.status(204).send();
+        });
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
