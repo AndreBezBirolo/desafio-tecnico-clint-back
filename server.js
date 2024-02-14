@@ -6,9 +6,21 @@ const db = require('./db/db');
 app.use(express.json());
 
 app.get('/tasks', (req, res) => {
-    db.all('SELECT * FROM tasks', (err, rows) => {
+    const {sort, filter} = req.query;
+
+    let sqlCommand = 'SELECT * FROM tasks';
+
+    if (filter) {
+        sqlCommand += ` WHERE status = '${filter}'`;
+    }
+
+    if (sort) {
+        sqlCommand += ` ORDER BY ${sort}`;
+    }
+
+    db.all(sqlCommand, (err, rows) => {
         if (err) {
-            res.status(500).json({ error: err.message });
+            res.status(500).json({error: err.message});
             return;
         }
         res.json(rows);

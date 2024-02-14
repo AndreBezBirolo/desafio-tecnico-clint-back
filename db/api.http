@@ -1,3 +1,15 @@
+GET http://localhost:3000/tasks?sort=name&filter=Ready
+
+###
+
+GET http://localhost:3000/tasks?filter=Ready
+
+###
+
+GET http://localhost:3000/tasks?sort=name
+
+###
+
 GET http://localhost:3000/tasks
 
 ###
