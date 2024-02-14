@@ -2,7 +2,7 @@ PUT http://localhost:3000/tasks/2
 Content-Type: application/json
 
 {
-  "name": "Tarefa 2",
+  "name": "",
   "status": "To do",
   "due_date": "2024-02-14"
 }
@@ -15,7 +15,7 @@ POST http://localhost:3000/tasks
 Content-Type: application/json
 
 {
-  "name": "Teste",
+  "name": "",
   "status": "To Do",
   "due_date": "2024-02-14"
 }
