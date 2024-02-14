@@ -1,3 +1,15 @@
+###
+POST http://localhost:3000/tasks
+Content-Type: application/json
+
+{
+  "name": "Teste",
+  "status": "To Do",
+  "due_date": "2024-02-14"
+}
+
+###
+
 GET http://localhost:3000/tasks?sort=name&filter=Ready
 
 ###
