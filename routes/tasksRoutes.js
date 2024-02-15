@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
         }
 
         if (search) {
-            filteredTasks = filteredTasks.filter(task => task.name.includes(search));
+            filteredTasks = filteredTasks.filter(task => task.name.toLowerCase().includes(search.toLowerCase()));
         }
 
         if (sort) {
