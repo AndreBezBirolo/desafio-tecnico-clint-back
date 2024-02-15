@@ -24,7 +24,7 @@ para persistência de dados.
 
 1. Clone o repositório:
     ```
-    git clone https://github.com/AndreBezBirolo/desafio-tecnico-clint-back.git
+    git clone https://github.com/AndreBezBirolo/nodejs-express-crud-kanban.git
     ```
 
 2. Instale as dependências:
