@@ -4,6 +4,7 @@ const app = express();
 const cors = require('cors');
 const PORT = 3000;
 const tasksRoutes = require('./routes/tasksRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 
 const errorHandler = (err, req, res, next) => {
@@ -19,7 +20,8 @@ const errorHandler = (err, req, res, next) => {
 app.use(errorHandler);
 app.use(express.json());
 app.use(cors());
-app.use('/', tasksRoutes);
+app.use('/tasks', tasksRoutes);
+app.use('/user', userRoutes);
 
 
 app.listen(PORT, () => {

@@ -5,7 +5,7 @@ const db = require('../db/db');
 const {body} = require("express-validator");
 const Task = require('../models/Task');
 
-router.get('/tasks', (req, res) => {
+router.get('/', (req, res) => {
     const {sort, filter, search} = req.query;
 
     Task.getAll((err, tasks) => {
@@ -35,7 +35,7 @@ router.get('/tasks', (req, res) => {
     });
 });
 
-router.post('/tasks', taskValidationRules, validateTask, (req, res) => {
+router.post('/', taskValidationRules, validateTask, (req, res) => {
     const {name, status, due_date} = req.body;
 
     Task.create(name, status, due_date, (err, newTask) => {
@@ -47,7 +47,7 @@ router.post('/tasks', taskValidationRules, validateTask, (req, res) => {
     });
 });
 
-router.delete('/tasks/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     const taskId = req.params.id;
 
     Task.deleteById(taskId, (err) => {
@@ -59,7 +59,7 @@ router.delete('/tasks/:id', (req, res) => {
     });
 });
 
-router.patch('/tasks/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('The status field must be "todo", "doing" or "ready"')], validateTask, (req, res) => {
+router.patch('/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('The status field must be "todo", "doing" or "ready"')], validateTask, (req, res) => {
     const taskId = req.params.id;
     const {name, status, due_date} = req.body;
 
