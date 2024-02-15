@@ -10,7 +10,7 @@ router.use(authenticateToken);
 
 router.get('/', (req, res) => {
     const {sort, filter, search} = req.query;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     Task.getAllByUserId(userId, (err, tasks) => {
         if (err) {
@@ -41,8 +41,9 @@ router.get('/', (req, res) => {
 
 router.post('/', taskValidationRules, validateTask, (req, res) => {
     const {name, status, due_date} = req.body;
+    const userId = req.user.userId;
 
-    Task.create(name, status, due_date, (err, newTask) => {
+    Task.create(userId, name, status, due_date, (err, newTask) => {
         if (err) {
             res.status(400).json({error: err.message});
             return;
@@ -53,7 +54,7 @@ router.post('/', taskValidationRules, validateTask, (req, res) => {
 
 router.delete('/:id', (req, res) => {
     const taskId = req.params.id;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     Task.getById(userId, taskId, (err, task) => {
         if (err) {
@@ -87,7 +88,7 @@ router.delete('/:id', (req, res) => {
 router.patch('/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('The status field must be "todo", "doing" or "ready"')], validateTask, (req, res) => {
     const taskId = req.params.id;
     const {name, status, due_date} = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const updatedTask = {};
     if (name) updatedTask.name = name;

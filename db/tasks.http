@@ -13,10 +13,12 @@ DELETE http://localhost:3000/tasks/4
 ###
 POST http://localhost:3000/tasks
 Content-Type: application/json
+Access-Control-Request-Headers: authorization
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoiYW5kcmVqYmIyIiwiaWF0IjoxNzA4MDE3NDkzLCJleHAiOjE3MDgwMjEwOTN9.msJN9b1ufV83ceAFRBIb02gYP6DtibF6O67BXWx_skI
 
 {
-  "name": "",
-  "status": "To Do",
+  "name": "Tarefa com autorização 2",
+  "status": "todo",
   "due_date": "2024-02-14"
 }
 
@@ -39,5 +41,7 @@ GET http://localhost:3000/tasks?sort=name
 ###
 
 GET http://localhost:3000/tasks
+Access-Control-Request-Headers: authorization
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYW5kcmVqYmIiLCJpYXQiOjE3MDgwMTY4MDksImV4cCI6MTcwODAyMDQwOX0.ck9x_ShjzkcSuGOvJTGSB416dDnUw_JrmROUVx-TX08
 
 ###
