@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 const router = express.Router();
 const User = require('../models/User');
-require('dotenv').config();
 
 
 router.post('/register', async (req, res) => {

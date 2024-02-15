@@ -15,7 +15,9 @@ db.serialize(() => {
             id       INTEGER PRIMARY KEY,
             name     TEXT NOT NULL,
             status   TEXT NOT NULL,
-            due_date DATE
+            due_date DATE,
+            user_id  INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )
     `);
 

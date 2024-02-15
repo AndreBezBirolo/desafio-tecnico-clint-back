@@ -4,11 +4,15 @@ const {taskValidationRules, validateTask} = require('./validators');
 const db = require('../db/db');
 const {body} = require("express-validator");
 const Task = require('../models/Task');
+const authenticateToken = require('../middleware/authenticateToken');
+
+router.use(authenticateToken);
 
 router.get('/', (req, res) => {
     const {sort, filter, search} = req.query;
+    const userId = req.user.id;
 
-    Task.getAll((err, tasks) => {
+    Task.getAllByUserId(userId, (err, tasks) => {
         if (err) {
             res.status(500).json({error: err.message});
             return;
@@ -49,19 +53,41 @@ router.post('/', taskValidationRules, validateTask, (req, res) => {
 
 router.delete('/:id', (req, res) => {
     const taskId = req.params.id;
+    const userId = req.user.id;
 
-    Task.deleteById(taskId, (err) => {
+    Task.getById(userId, taskId, (err, task) => {
         if (err) {
-            res.status(400).json({error: err.message});
+            res.status(500).json({error: err.message});
             return;
         }
-        res.status(204).send();
+
+        if (!task) {
+            res.status(404).json({error: 'Tarefa não encontrada'});
+            return;
+        }
+
+        if (task.user_id !== userId) {
+            res.status(403).json({error: 'Você não tem permissão para excluir esta tarefa'});
+            return;
+        }
+
+        Task.deleteById(userId, taskId, (err, task) => {
+            if (err) {
+                res.status(400).json({error: err.message});
+                return;
+            }
+
+            res.status(204).send();
+        });
     });
+
+
 });
 
 router.patch('/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('The status field must be "todo", "doing" or "ready"')], validateTask, (req, res) => {
     const taskId = req.params.id;
     const {name, status, due_date} = req.body;
+    const userId = req.user.id;
 
     const updatedTask = {};
     if (name) updatedTask.name = name;
@@ -72,13 +98,31 @@ router.patch('/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessag
         return res.status(400).json({error: 'No fields provided for update.'});
     }
 
-    Task.updateById(taskId, updatedTask, (err) => {
+    Task.getById(userId, taskId, (err, task) => {
         if (err) {
-            res.status(400).json({error: err.message});
+            res.status(500).json({error: err.message});
             return;
         }
-        res.status(204).json(updatedTask);
-    });
+
+        if (!task) {
+            res.status(404).json({error: 'Tarefa não encontrada'});
+            return;
+        }
+
+        if (task.user_id !== userId) {
+            res.status(403).json({error: 'Você não tem permissão para editar esta tarefa'});
+            return;
+        }
+
+        Task.updateById(userId, taskId, updatedTask, (err) => {
+            if (err) {
+                res.status(400).json({error: err.message});
+                return;
+            }
+            res.status(204).json(updatedTask);
+        });
+    })
+
 });
 
 

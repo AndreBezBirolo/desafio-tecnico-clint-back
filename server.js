@@ -5,6 +5,7 @@ const cors = require('cors');
 const PORT = 3000;
 const tasksRoutes = require('./routes/tasksRoutes');
 const userRoutes = require('./routes/userRoutes');
+require('dotenv').config();
 
 
 const errorHandler = (err, req, res, next) => {
