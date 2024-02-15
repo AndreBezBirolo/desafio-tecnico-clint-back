@@ -8,7 +8,8 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:3000/tasks/4
+DELETE http://localhost:3000/tasks/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYW5kcmVqYmIiLCJpYXQiOjE3MDgwMTc0MjQsImV4cCI6MTcwODAyMTAyNH0.s5fYhzV9HmjgwwbMn5hE3lcj7byvwsTZ2WIKJE1mYuc
 
 ###
 POST http://localhost:3000/tasks
@@ -42,6 +43,6 @@ GET http://localhost:3000/tasks?sort=name
 
 GET http://localhost:3000/tasks
 Access-Control-Request-Headers: authorization
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYW5kcmVqYmIiLCJpYXQiOjE3MDgwMTY4MDksImV4cCI6MTcwODAyMDQwOX0.ck9x_ShjzkcSuGOvJTGSB416dDnUw_JrmROUVx-TX08
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYW5kcmVqYmIiLCJpYXQiOjE3MDgwMTc0MjQsImV4cCI6MTcwODAyMTAyNH0.s5fYhzV9HmjgwwbMn5hE3lcj7byvwsTZ2WIKJE1mYuc
 
 ###
