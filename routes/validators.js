@@ -2,7 +2,7 @@ const {body, validationResult} = require('express-validator');
 
 const taskValidationRules = [
     body('name').notEmpty().withMessage('O campo nome é obrigatório'),
-    body('status').isIn(['To do', 'Doing', 'Ready']).withMessage('O campo status deve ser "To Do", "Doing" ou "Ready"'),
+    body('status').isIn(['todo', 'doing', 'ready']).withMessage('O campo status deve ser "todo", "doing" ou "ready"'),
     body('due_date').isISO8601().toDate().withMessage('O campo due_date deve estar no formato ISO8601'),
 ];
 

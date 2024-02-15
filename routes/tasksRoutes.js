@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {taskValidationRules, validateTask} = require('./validators');
 const db = require('../db/db');
+const {body} = require("express-validator");
 
 router.get('/tasks', (req, res) => {
     const {sort, filter, search} = req.query;
@@ -68,10 +69,27 @@ router.delete('/tasks/:id', (req, res) => {
     });
 });
 
-router.put('/tasks/:id', taskValidationRules, validateTask, (req, res) => {
+router.patch('/tasks/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('O campo status deve ser "todo", "doing" ou "ready"')], validateTask, (req, res) => {
     const taskId = req.params.id;
     const {name, status, due_date} = req.body;
-    const updatedTask = {name, status, due_date};
+    const updatedTask = {};
+
+    if (name) {
+        updatedTask.name = name;
+    }
+    if (status) {
+        updatedTask.status = status;
+    }
+    if (due_date) {
+        updatedTask.due_date = due_date;
+    }
+
+    if (Object.keys(updatedTask).length === 0) {
+        return res.status(400).json({error: 'Nenhum campo fornecido para atualização.'});
+    }
+
+    const fieldsToUpdate = Object.keys(updatedTask).map(field => `${field} = ?`).join(', ');
+    const valuesToUpdate = Object.values(updatedTask);
 
     db.get('SELECT id FROM tasks WHERE id = ?', [taskId], (err, row) => {
         if (err) {
@@ -84,9 +102,12 @@ router.put('/tasks/:id', taskValidationRules, validateTask, (req, res) => {
             return;
         }
 
-        db.run(
-            'UPDATE tasks SET name = ?, status = ?, due_date = ? WHERE id = ?',
-            [name, status, due_date, req.params.id],
+        const sql = `UPDATE tasks
+                     SET ${fieldsToUpdate}
+                     WHERE id = ?`;
+        const values = [...valuesToUpdate, taskId];
+
+        db.run(sql, values,
             function (err) {
                 if (err) {
                     res.status(400).json({error: err.message});
