@@ -4,12 +4,20 @@ const {taskValidationRules, validateTask} = require('./validators');
 const db = require('../db/db');
 
 router.get('/tasks', (req, res) => {
-    const {sort, filter} = req.query;
+    const {sort, filter, search} = req.query;
 
     let sqlCommand = 'SELECT * FROM tasks';
 
     if (filter) {
         sqlCommand += ` WHERE status = '${filter}'`;
+    }
+
+    if (search) {
+        if (filter) {
+            sqlCommand += ` AND name LIKE '%${search}%'`
+        } else {
+            sqlCommand += ` WHERE name LIKE '%${search}%'`
+        }
     }
 
     if (sort) {
