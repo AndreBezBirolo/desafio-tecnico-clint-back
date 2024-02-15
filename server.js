@@ -1,6 +1,7 @@
 const express = require('express');
 const {ValidationError} = require('express-validator');
 const app = express();
+const cors = require('cors');
 const PORT = 3000;
 const tasksRoutes = require('./routes/tasksRoutes');
 
@@ -17,7 +18,8 @@ const errorHandler = (err, req, res, next) => {
 
 app.use(errorHandler);
 app.use(express.json());
-app.use('/tasks', tasksRoutes);
+app.use(cors());
+app.use('/', tasksRoutes);
 
 
 app.listen(PORT, () => {
