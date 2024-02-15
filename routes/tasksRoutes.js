@@ -28,12 +28,18 @@ router.get('/', (req, res) => {
 
         if (sort) {
             filteredTasks.sort((a, b) => {
-                const nameA = a.name.toLowerCase();
-                const nameB = b.name.toLowerCase();
+                const valueA = typeof a[sort] === 'string' ? a[sort].toLowerCase() : new Date(a[sort]);
+                const valueB = typeof b[sort] === 'string' ? b[sort].toLowerCase() : new Date(b[sort]);
 
-                if (nameA < nameB) return -1;
-                if (nameA > nameB) return 1;
-                return 0;
+                if (typeof valueA === 'string' && typeof valueB === 'string') {
+                    if (valueA < valueB) return -1;
+                    if (valueA > valueB) return 1;
+                    return 0;
+                } else if (typeof valueA === 'object' && typeof valueB === 'object') {
+                    return valueA.getTime() - valueB.getTime();
+                } else {
+                    return typeof valueA === 'string' ? -1 : 1;
+                }
             });
         }
 
