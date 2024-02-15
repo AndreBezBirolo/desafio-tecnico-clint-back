@@ -71,12 +71,12 @@ router.delete('/:id', (req, res) => {
         }
 
         if (!task) {
-            res.status(404).json({error: 'Tarefa não encontrada'});
+            res.status(404).json({error: 'Task not found'});
             return;
         }
 
         if (task.user_id !== userId) {
-            res.status(403).json({error: 'Você não tem permissão para excluir esta tarefa'});
+            res.status(403).json({error: 'You do not have permission to delete this task'});
             return;
         }
 
@@ -114,12 +114,12 @@ router.patch('/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessag
         }
 
         if (!task) {
-            res.status(404).json({error: 'Tarefa não encontrada'});
+            res.status(404).json({error: 'Task not found'});
             return;
         }
 
         if (task.user_id !== userId) {
-            res.status(403).json({error: 'Você não tem permissão para editar esta tarefa'});
+            res.status(403).json({error: 'You do not have permission to edit this task'});
             return;
         }
 
