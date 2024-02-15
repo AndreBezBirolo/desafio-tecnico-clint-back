@@ -3,121 +3,83 @@ const router = express.Router();
 const {taskValidationRules, validateTask} = require('./validators');
 const db = require('../db/db');
 const {body} = require("express-validator");
+const Task = require('../models/Task');
 
 router.get('/tasks', (req, res) => {
     const {sort, filter, search} = req.query;
 
-    let sqlCommand = 'SELECT * FROM tasks';
-
-    if (filter) {
-        sqlCommand += ` WHERE status = '${filter}'`;
-    }
-
-    if (search) {
-        if (filter) {
-            sqlCommand += ` AND name LIKE '%${search}%'`
-        } else {
-            sqlCommand += ` WHERE name LIKE '%${search}%'`
-        }
-    }
-
-    if (sort) {
-        sqlCommand += ` ORDER BY ${sort} COLLATE NOCASE`;
-    }
-
-    db.all(sqlCommand, (err, rows) => {
+    Task.getAll((err, tasks) => {
         if (err) {
             res.status(500).json({error: err.message});
             return;
         }
-        res.json(rows);
+
+        let filteredTasks = tasks;
+        if (filter) {
+            filteredTasks = tasks.filter(task => task.status === filter);
+        }
+
+        if (search) {
+            filteredTasks = filteredTasks.filter(task => task.name.includes(search));
+        }
+
+        if (sort) {
+            filteredTasks.sort((a, b) => {
+                if (a[sort] < b[sort]) return -1;
+                if (a[sort] > b[sort]) return 1;
+                return 0;
+            });
+        }
+
+        res.json(filteredTasks);
     });
 });
 
 router.post('/tasks', taskValidationRules, validateTask, (req, res) => {
     const {name, status, due_date} = req.body;
-    const taskData = {name, status, due_date};
-    db.run('INSERT INTO tasks (name, status, due_date) VALUES (?, ?, ?)', [name, status, due_date], function (err) {
+
+    Task.create(name, status, due_date, (err, newTask) => {
         if (err) {
             res.status(400).json({error: err.message});
             return;
         }
-        res.status(201).json(taskData);
+        res.status(201).json(newTask);
     });
 });
 
 router.delete('/tasks/:id', (req, res) => {
     const taskId = req.params.id;
-    db.get('SELECT id FROM tasks WHERE id = ?', [taskId], (err, row) => {
+
+    Task.deleteById(taskId, (err) => {
         if (err) {
-            res.status(500).json({error: err.message});
+            res.status(400).json({error: err.message});
             return;
         }
-
-        if (!row) {
-            res.status(404).json({error: 'Tarefa não encontrada'});
-            return;
-        }
-
-        db.run('DELETE FROM tasks WHERE id = ?', taskId, function (err) {
-            if (err) {
-                res.status(400).json({error: err.message});
-                return;
-            }
-            res.status(204).send();
-        });
+        res.status(204).send();
     });
 });
 
-router.patch('/tasks/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('O campo status deve ser "todo", "doing" ou "ready"')], validateTask, (req, res) => {
+router.patch('/tasks/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('The status field must be "todo", "doing" or "ready"')], validateTask, (req, res) => {
     const taskId = req.params.id;
     const {name, status, due_date} = req.body;
-    const updatedTask = {};
 
-    if (name) {
-        updatedTask.name = name;
-    }
-    if (status) {
-        updatedTask.status = status;
-    }
-    if (due_date) {
-        updatedTask.due_date = due_date;
-    }
+    const updatedTask = {};
+    if (name) updatedTask.name = name;
+    if (status) updatedTask.status = status;
+    if (due_date) updatedTask.due_date = due_date;
 
     if (Object.keys(updatedTask).length === 0) {
-        return res.status(400).json({error: 'Nenhum campo fornecido para atualização.'});
+        return res.status(400).json({error: 'No fields provided for update.'});
     }
 
-    const fieldsToUpdate = Object.keys(updatedTask).map(field => `${field} = ?`).join(', ');
-    const valuesToUpdate = Object.values(updatedTask);
-
-    db.get('SELECT id FROM tasks WHERE id = ?', [taskId], (err, row) => {
+    Task.updateById(taskId, updatedTask, (err) => {
         if (err) {
-            res.status(500).json({error: err.message});
+            res.status(400).json({error: err.message});
             return;
         }
-
-        if (!row) {
-            res.status(404).json({error: 'ID inválido.'});
-            return;
-        }
-
-        const sql = `UPDATE tasks
-                     SET ${fieldsToUpdate}
-                     WHERE id = ?`;
-        const values = [...valuesToUpdate, taskId];
-
-        db.run(sql, values,
-            function (err) {
-                if (err) {
-                    res.status(400).json({error: err.message});
-                    return;
-                }
-                res.status(204).json(updatedTask);
-            }
-        );
-    })
-
+        res.status(204).json(updatedTask);
+    });
 });
+
 
 module.exports = router;

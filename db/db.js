@@ -19,9 +19,15 @@ db.serialize(() => {
         )
     `);
 
-    // db.run("INSERT INTO tasks (name, status, due_date) VALUES ('Tarefa 1', 'To Do', '2024-02-14')");
-    // db.run("INSERT INTO tasks (name, status, due_date) VALUES ('Tarefa 2', 'Doing', '2024-02-15')");
-    // db.run("INSERT INTO tasks (name, status, due_date) VALUES ('Tarefa 3', 'Ready', '2024-02-16')");
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users
+        (
+            id       INTEGER PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        )`
+    );
+
 });
 
 module.exports = db;
