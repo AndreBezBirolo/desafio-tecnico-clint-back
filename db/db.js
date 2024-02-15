@@ -15,13 +15,21 @@ db.serialize(() => {
             id       INTEGER PRIMARY KEY,
             name     TEXT NOT NULL,
             status   TEXT NOT NULL,
-            due_date DATE
+            due_date DATE,
+            user_id  INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )
     `);
 
-    // db.run("INSERT INTO tasks (name, status, due_date) VALUES ('Tarefa 1', 'To Do', '2024-02-14')");
-    // db.run("INSERT INTO tasks (name, status, due_date) VALUES ('Tarefa 2', 'Doing', '2024-02-15')");
-    // db.run("INSERT INTO tasks (name, status, due_date) VALUES ('Tarefa 3', 'Ready', '2024-02-16')");
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users
+        (
+            id       INTEGER PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        )`
+    );
+
 });
 
 module.exports = db;

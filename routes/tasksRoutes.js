@@ -1,123 +1,138 @@
 const express = require('express');
 const router = express.Router();
 const {taskValidationRules, validateTask} = require('./validators');
-const db = require('../db/db');
 const {body} = require("express-validator");
+const Task = require('../models/Task');
+const authenticateToken = require('../middleware/authenticateToken');
 
-router.get('/tasks', (req, res) => {
+router.use(authenticateToken);
+
+router.get('/', (req, res) => {
     const {sort, filter, search} = req.query;
+    const userId = req.user.userId;
 
-    let sqlCommand = 'SELECT * FROM tasks';
-
-    if (filter) {
-        sqlCommand += ` WHERE status = '${filter}'`;
-    }
-
-    if (search) {
-        if (filter) {
-            sqlCommand += ` AND name LIKE '%${search}%'`
-        } else {
-            sqlCommand += ` WHERE name LIKE '%${search}%'`
-        }
-    }
-
-    if (sort) {
-        sqlCommand += ` ORDER BY ${sort} COLLATE NOCASE`;
-    }
-
-    db.all(sqlCommand, (err, rows) => {
+    Task.getAllByUserId(userId, (err, tasks) => {
         if (err) {
             res.status(500).json({error: err.message});
             return;
         }
-        res.json(rows);
+
+        let filteredTasks = tasks;
+        if (filter) {
+            filteredTasks = tasks.filter(task => task.status === filter);
+        }
+
+        if (search) {
+            filteredTasks = filteredTasks.filter(task => task.name.toLowerCase().includes(search.toLowerCase()));
+        }
+
+        if (sort) {
+            filteredTasks.sort((a, b) => {
+                const valueA = typeof a[sort] === 'string' ? a[sort].toLowerCase() : new Date(a[sort]);
+                const valueB = typeof b[sort] === 'string' ? b[sort].toLowerCase() : new Date(b[sort]);
+
+                if (typeof valueA === 'string' && typeof valueB === 'string') {
+                    if (valueA < valueB) return -1;
+                    if (valueA > valueB) return 1;
+                    return 0;
+                } else if (typeof valueA === 'object' && typeof valueB === 'object') {
+                    return valueA.getTime() - valueB.getTime();
+                } else {
+                    return typeof valueA === 'string' ? -1 : 1;
+                }
+            });
+        }
+
+        res.json(filteredTasks);
     });
 });
 
-router.post('/tasks', taskValidationRules, validateTask, (req, res) => {
+router.post('/', taskValidationRules, validateTask, (req, res) => {
     const {name, status, due_date} = req.body;
-    const taskData = {name, status, due_date};
-    db.run('INSERT INTO tasks (name, status, due_date) VALUES (?, ?, ?)', [name, status, due_date], function (err) {
+    const userId = req.user.userId;
+
+    Task.create(userId, name, status, due_date, (err, newTask) => {
         if (err) {
             res.status(400).json({error: err.message});
             return;
         }
-        res.status(201).json(taskData);
+        res.status(201).json(newTask);
     });
 });
 
-router.delete('/tasks/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     const taskId = req.params.id;
-    db.get('SELECT id FROM tasks WHERE id = ?', [taskId], (err, row) => {
+    const userId = req.user.userId;
+
+    Task.getById(userId, taskId, (err, task) => {
         if (err) {
             res.status(500).json({error: err.message});
             return;
         }
 
-        if (!row) {
+        if (!task) {
             res.status(404).json({error: 'Tarefa não encontrada'});
             return;
         }
 
-        db.run('DELETE FROM tasks WHERE id = ?', taskId, function (err) {
+        if (task.user_id !== userId) {
+            res.status(403).json({error: 'Você não tem permissão para excluir esta tarefa'});
+            return;
+        }
+
+        Task.deleteById(userId, taskId, (err, task) => {
             if (err) {
                 res.status(400).json({error: err.message});
                 return;
             }
+
             res.status(204).send();
         });
     });
+
+
 });
 
-router.patch('/tasks/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('O campo status deve ser "todo", "doing" ou "ready"')], validateTask, (req, res) => {
+router.patch('/:id', [body('status').isIn(['todo', 'doing', 'ready']).withMessage('The status field must be "todo", "doing" or "ready"')], validateTask, (req, res) => {
     const taskId = req.params.id;
     const {name, status, due_date} = req.body;
-    const updatedTask = {};
+    const userId = req.user.userId;
 
-    if (name) {
-        updatedTask.name = name;
-    }
-    if (status) {
-        updatedTask.status = status;
-    }
-    if (due_date) {
-        updatedTask.due_date = due_date;
-    }
+    const updatedTask = {};
+    if (name) updatedTask.name = name;
+    if (status) updatedTask.status = status;
+    if (due_date) updatedTask.due_date = due_date;
 
     if (Object.keys(updatedTask).length === 0) {
-        return res.status(400).json({error: 'Nenhum campo fornecido para atualização.'});
+        return res.status(400).json({error: 'No fields provided for update.'});
     }
 
-    const fieldsToUpdate = Object.keys(updatedTask).map(field => `${field} = ?`).join(', ');
-    const valuesToUpdate = Object.values(updatedTask);
-
-    db.get('SELECT id FROM tasks WHERE id = ?', [taskId], (err, row) => {
+    Task.getById(userId, taskId, (err, task) => {
         if (err) {
             res.status(500).json({error: err.message});
             return;
         }
 
-        if (!row) {
-            res.status(404).json({error: 'ID inválido.'});
+        if (!task) {
+            res.status(404).json({error: 'Tarefa não encontrada'});
             return;
         }
 
-        const sql = `UPDATE tasks
-                     SET ${fieldsToUpdate}
-                     WHERE id = ?`;
-        const values = [...valuesToUpdate, taskId];
+        if (task.user_id !== userId) {
+            res.status(403).json({error: 'Você não tem permissão para editar esta tarefa'});
+            return;
+        }
 
-        db.run(sql, values,
-            function (err) {
-                if (err) {
-                    res.status(400).json({error: err.message});
-                    return;
-                }
-                res.status(204).json(updatedTask);
+        Task.updateById(userId, taskId, updatedTask, (err) => {
+            if (err) {
+                res.status(400).json({error: err.message});
+                return;
             }
-        );
+            res.status(204).json(updatedTask);
+        });
     })
 
 });
+
 
 module.exports = router;
