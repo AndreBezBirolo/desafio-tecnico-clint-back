@@ -13,7 +13,7 @@ router.get('/tasks', (req, res) => {
     }
 
     if (sort) {
-        sqlCommand += ` ORDER BY ${sort}`;
+        sqlCommand += ` ORDER BY ${sort} COLLATE NOCASE`;
     }
 
     db.all(sqlCommand, (err, rows) => {
