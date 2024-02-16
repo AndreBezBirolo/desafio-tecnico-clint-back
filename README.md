@@ -10,13 +10,9 @@ para persistência de dados.
 
 * Node.js
 * Express.js
-* React.js
-* TypeScript
 * Axios
 * bcrypt
 * jsonwebtoken
-* react-beautiful-dnd
-* react-bootstrap
 * SQLite3
 * Lodash
 
