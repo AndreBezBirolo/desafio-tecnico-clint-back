@@ -8,7 +8,7 @@ para persistência de dados.
 
 ## Tecnologias utilizadas
 
-* Node.js
+* Node.js (20.11.1)
 * Express.js
 * Axios
 * bcrypt
