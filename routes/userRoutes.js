@@ -72,4 +72,26 @@ router.post('/login', (req, res) => {
     });
 });
 
+router.post('/renew-token', (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({error: 'Unauthorized'});
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({error: 'Unauthorized'});
+        }
+
+        const newToken = jwt.sign(
+            {userId: decoded.userId, username: decoded.username},
+            process.env.JWT_SECRET,
+            {expiresIn: '1h'}
+        );
+
+        res.json({token: newToken});
+    });
+});
+
+
 module.exports = router;
